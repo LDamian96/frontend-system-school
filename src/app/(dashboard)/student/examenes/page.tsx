@@ -5,44 +5,51 @@ import { motion } from 'framer-motion'
 import {
   PenTool,
   Calendar,
-  Clock,
   Download,
-  CheckCircle2,
   AlertCircle,
-  TrendingUp,
-  TrendingDown,
-  FileText,
-  Eye
+  Filter
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+
+const courses = [
+  { id: 'all', name: 'Todos los cursos' },
+  { id: 'mat', name: 'Matemáticas' },
+  { id: 'esp', name: 'Español' },
+  { id: 'cie', name: 'Ciencias' },
+  { id: 'his', name: 'Historia' },
+  { id: 'ing', name: 'Inglés' },
+  { id: 'edf', name: 'Educación Física' },
+]
 
 interface Exam {
   id: number
   title: string
   subject: string
+  subjectId: string
   date: string
-  duration: string
   totalPoints: number
   grade: number | null
-  status: 'upcoming' | 'completed' | 'missed'
   observation?: string
 }
 
 const exams: Exam[] = [
-  { id: 1, title: 'Examen Parcial - Álgebra', subject: 'Matemáticas', date: '2024-12-15', duration: '90 min', totalPoints: 20, grade: null, status: 'upcoming' },
-  { id: 2, title: 'Evaluación Final', subject: 'Español', date: '2024-12-18', duration: '60 min', totalPoints: 20, grade: null, status: 'upcoming' },
-  { id: 3, title: 'Examen de Unidad 3', subject: 'Ciencias', date: '2024-12-08', duration: '45 min', totalPoints: 20, grade: 18, status: 'completed', observation: 'Excelente trabajo' },
-  { id: 4, title: 'Evaluación Continua', subject: 'Historia', date: '2024-12-05', duration: '30 min', totalPoints: 20, grade: 15, status: 'completed' },
-  { id: 5, title: 'Examen Oral', subject: 'Inglés', date: '2024-12-03', duration: '15 min', totalPoints: 20, grade: 17, status: 'completed', observation: 'Buena pronunciación' },
-  { id: 6, title: 'Prueba Física', subject: 'Ed. Física', date: '2024-11-28', duration: '60 min', totalPoints: 20, grade: null, status: 'missed', observation: 'No asistió - Justificado' },
+  { id: 1, title: 'Examen Parcial - Álgebra', subject: 'Matemáticas', subjectId: 'mat', date: '2024-12-15', totalPoints: 20, grade: null },
+  { id: 2, title: 'Evaluación Final', subject: 'Español', subjectId: 'esp', date: '2024-12-18', totalPoints: 20, grade: null },
+  { id: 3, title: 'Examen de Unidad 3', subject: 'Ciencias', subjectId: 'cie', date: '2024-12-08', totalPoints: 20, grade: 18, observation: 'Excelente trabajo' },
+  { id: 4, title: 'Evaluación Continua', subject: 'Historia', subjectId: 'his', date: '2024-12-05', totalPoints: 20, grade: 15 },
+  { id: 5, title: 'Examen Oral', subject: 'Inglés', subjectId: 'ing', date: '2024-12-03', totalPoints: 20, grade: 17, observation: 'Buena pronunciación' },
+  { id: 6, title: 'Prueba Física', subject: 'Educación Física', subjectId: 'edf', date: '2024-11-28', totalPoints: 20, grade: 19 },
+  { id: 7, title: 'Examen de Geometría', subject: 'Matemáticas', subjectId: 'mat', date: '2024-11-20', totalPoints: 20, grade: 16 },
+  { id: 8, title: 'Comprensión Lectora', subject: 'Español', subjectId: 'esp', date: '2024-11-15', totalPoints: 20, grade: 14 },
 ]
 
 export default function StudentExamenesPage() {
-  const completedExams = exams.filter(e => e.status === 'completed')
-  const average = completedExams.length > 0
-    ? Math.round(completedExams.reduce((acc, e) => acc + (e.grade || 0), 0) / completedExams.length)
-    : 0
+  const [selectedCourse, setSelectedCourse] = useState('all')
+
+  const filteredExams = selectedCourse === 'all'
+    ? exams
+    : exams.filter(e => e.subjectId === selectedCourse)
 
   const getGradeColor = (grade: number, total: number) => {
     const percentage = (grade / total) * 100
@@ -60,31 +67,13 @@ export default function StudentExamenesPage() {
     return 'bg-red-500/20'
   }
 
-  const getStatusBadge = (status: Exam['status']) => {
-    const styles = {
-      upcoming: 'bg-blue-500/20 text-blue-600',
-      completed: 'bg-green-500/20 text-green-600',
-      missed: 'bg-red-500/20 text-red-600'
-    }
-    const labels = {
-      upcoming: 'Próximo',
-      completed: 'Completado',
-      missed: 'No asistió'
-    }
-    return (
-      <span className={`px-3 py-1 rounded-full text-xs font-medium ${styles[status]}`}>
-        {labels[status]}
-      </span>
-    )
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-heading text-3xl font-bold">Mis Exámenes</h1>
-          <p className="text-muted-foreground mt-1">Revisa tus calificaciones y próximos exámenes</p>
+          <p className="text-muted-foreground mt-1">Revisa tus calificaciones de exámenes</p>
         </div>
         <Button variant="outline">
           <Download className="h-4 w-4 mr-2" />
@@ -92,208 +81,97 @@ export default function StudentExamenesPage() {
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {[
-          { label: 'Promedio General', value: `${average}/20`, icon: TrendingUp, color: 'text-green-500', bgColor: 'bg-green-500/10' },
-          { label: 'Exámenes Próximos', value: exams.filter(e => e.status === 'upcoming').length, icon: Calendar, color: 'text-blue-500', bgColor: 'bg-blue-500/10' },
-          { label: 'Completados', value: completedExams.length, icon: CheckCircle2, color: 'text-green-500', bgColor: 'bg-green-500/10' },
-          { label: 'Mejor Nota', value: `${Math.max(...completedExams.map(e => e.grade || 0))}/20`, icon: TrendingUp, color: 'text-primary', bgColor: 'bg-primary/10' },
-        ].map((stat, index) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${stat.bgColor}`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Upcoming Exams */}
+      {/* Course Filter */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-blue-500" />
-            Próximos Exámenes
-          </CardTitle>
-          <CardDescription>Prepárate para tus evaluaciones</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {exams.filter(e => e.status === 'upcoming').map((exam, index) => (
-              <motion.div
-                key={exam.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-xl bg-blue-500/5 border border-blue-500/20"
-              >
-                <div className="p-3 rounded-xl bg-blue-500/20 shrink-0">
-                  <PenTool className="h-5 w-5 text-blue-500" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold">{exam.title}</h3>
-                  <p className="text-sm text-muted-foreground">{exam.subject}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    {exam.date}
-                  </span>
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    {exam.duration}
-                  </span>
-                  <span className="flex items-center gap-1 text-muted-foreground">
-                    <FileText className="h-4 w-4" />
-                    {exam.totalPoints} pts
-                  </span>
-                </div>
-              </motion.div>
-            ))}
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filtrar por curso:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {courses.map((course) => (
+                <Button
+                  key={course.id}
+                  variant={selectedCourse === course.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCourse(course.id)}
+                >
+                  {course.name}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Completed Exams */}
+      {/* Exams List */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-green-500" />
-            Resultados de Exámenes
+            <PenTool className="h-5 w-5 text-primary" />
+            Lista de Exámenes
           </CardTitle>
-          <CardDescription>Historial de evaluaciones completadas</CardDescription>
+          <CardDescription>Historial de evaluaciones y calificaciones</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {exams.filter(e => e.status !== 'upcoming').map((exam, index) => (
-              <motion.div
-                key={exam.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + index * 0.05 }}
-                className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className={`p-3 rounded-xl ${exam.status === 'completed' ? 'bg-green-500/10' : 'bg-red-500/10'}`}>
-                      <PenTool className={`h-5 w-5 ${exam.status === 'completed' ? 'text-green-500' : 'text-red-500'}`} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
+            {filteredExams.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No hay exámenes para este curso
+              </div>
+            ) : (
+              filteredExams.map((exam, index) => (
+                <motion.div
+                  key={exam.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  className="p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className={`p-3 rounded-xl ${exam.grade !== null ? 'bg-green-500/10' : 'bg-blue-500/10'}`}>
+                        <PenTool className={`h-5 w-5 ${exam.grade !== null ? 'text-green-500' : 'text-blue-500'}`} />
+                      </div>
+                      <div className="flex-1">
                         <h3 className="font-semibold">{exam.title}</h3>
-                        {getStatusBadge(exam.status)}
+                        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mt-1">
+                          <span>{exam.subject}</span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {exam.date}
+                          </span>
+                        </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">{exam.subject} - {exam.date}</p>
                     </div>
-                  </div>
 
-                  {exam.status === 'completed' && exam.grade !== null && (
+                    {/* Grade */}
                     <div className="flex items-center gap-4">
-                      <div className={`px-4 py-2 rounded-xl ${getGradeBg(exam.grade, exam.totalPoints)}`}>
-                        <span className={`text-2xl font-bold ${getGradeColor(exam.grade, exam.totalPoints)}`}>
-                          {exam.grade}
-                        </span>
-                        <span className="text-muted-foreground">/{exam.totalPoints}</span>
-                      </div>
+                      {exam.grade !== null ? (
+                        <div className={`px-4 py-2 rounded-xl ${getGradeBg(exam.grade, exam.totalPoints)}`}>
+                          <span className={`text-2xl font-bold ${getGradeColor(exam.grade, exam.totalPoints)}`}>
+                            {exam.grade}
+                          </span>
+                          <span className="text-muted-foreground">/{exam.totalPoints}</span>
+                        </div>
+                      ) : (
+                        <div className="px-4 py-2 rounded-xl bg-blue-500/10">
+                          <span className="text-blue-500 font-medium">Pendiente</span>
+                        </div>
+                      )}
                     </div>
-                  )}
-
-                  {exam.status === 'missed' && (
-                    <div className="px-4 py-2 rounded-xl bg-red-500/10">
-                      <span className="text-red-500 font-medium">Sin calificar</span>
-                    </div>
-                  )}
-                </div>
-
-                {exam.observation && (
-                  <div className="mt-3 p-3 rounded-lg bg-yellow-500/10 flex items-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-yellow-600 shrink-0 mt-0.5" />
-                    <p className="text-sm text-yellow-700">{exam.observation}</p>
                   </div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Performance Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Rendimiento por Materia</CardTitle>
-          <CardDescription>Promedio de notas en exámenes por asignatura</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { subject: 'Matemáticas', avg: 16, trend: 'up' },
-              { subject: 'Español', avg: 15, trend: 'stable' },
-              { subject: 'Ciencias', avg: 18, trend: 'up' },
-              { subject: 'Historia', avg: 14, trend: 'down' },
-              { subject: 'Inglés', avg: 17, trend: 'up' },
-              { subject: 'Ed. Física', avg: 19, trend: 'stable' },
-            ].map((item, index) => (
-              <motion.div
-                key={item.subject}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
-                className="flex flex-col items-center p-4 rounded-xl bg-muted/30"
-              >
-                <div className="relative w-16 h-16 mb-3">
-                  <svg className="w-full h-full -rotate-90">
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      className="fill-none stroke-muted stroke-[4]"
-                    />
-                    <motion.circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      className={`fill-none stroke-[4] ${
-                        item.avg >= 18 ? 'stroke-green-500' :
-                        item.avg >= 15 ? 'stroke-blue-500' :
-                        item.avg >= 12 ? 'stroke-yellow-500' : 'stroke-red-500'
-                      }`}
-                      strokeLinecap="round"
-                      initial={{ strokeDasharray: '0, 176' }}
-                      animate={{ strokeDasharray: `${(item.avg / 20) * 176}, 176` }}
-                      transition={{ delay: 0.5 + index * 0.05, duration: 0.8 }}
-                    />
-                  </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">
-                    {item.avg}
-                  </span>
-                </div>
-                <span className="text-sm font-medium text-center">{item.subject}</span>
-                <span className={`text-xs mt-1 flex items-center gap-1 ${
-                  item.trend === 'up' ? 'text-green-500' :
-                  item.trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
-                }`}>
-                  {item.trend === 'up' ? <TrendingUp className="h-3 w-3" /> :
-                   item.trend === 'down' ? <TrendingDown className="h-3 w-3" /> : null}
-                  {item.trend === 'up' ? 'Mejorando' :
-                   item.trend === 'down' ? 'Bajando' : 'Estable'}
-                </span>
-              </motion.div>
-            ))}
+                  {exam.observation && (
+                    <div className="mt-3 p-3 rounded-lg bg-yellow-500/10 flex items-start gap-2">
+                      <AlertCircle className="h-4 w-4 text-yellow-600 shrink-0 mt-0.5" />
+                      <p className="text-sm text-yellow-700">{exam.observation}</p>
+                    </div>
+                  )}
+                </motion.div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

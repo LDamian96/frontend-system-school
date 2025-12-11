@@ -56,6 +56,12 @@ const stats = [
   },
 ]
 
+const genderStats = {
+  male: 687,
+  female: 597,
+  total: 1284
+}
+
 const recentActivities = [
   {
     id: 1,
@@ -187,6 +193,71 @@ export default function AdminDashboardPage() {
             </Card>
           </motion.div>
         ))}
+      </motion.div>
+
+      {/* Gender Distribution */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Distribución por Género</CardTitle>
+            <CardDescription>Estadísticas de estudiantes por sexo</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-blue-500/10">
+                <div className="p-3 rounded-full bg-blue-500 text-white">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-blue-600">{genderStats.male}</p>
+                  <p className="text-sm text-muted-foreground">Estudiantes Masculinos</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10">
+                <div className="p-3 rounded-full bg-pink-500 text-white">
+                  <Users className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-pink-600">{genderStats.female}</p>
+                  <p className="text-sm text-muted-foreground">Estudiantes Femeninas</p>
+                </div>
+              </div>
+              <div className="p-4 rounded-xl bg-muted/50">
+                <p className="text-sm text-muted-foreground mb-3">Porcentaje</p>
+                <div className="space-y-2">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Masculino</span>
+                      <span className="font-medium">{Math.round((genderStats.male / genderStats.total) * 100)}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-blue-500 rounded-full"
+                        style={{ width: `${(genderStats.male / genderStats.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Femenino</span>
+                      <span className="font-medium">{Math.round((genderStats.female / genderStats.total) * 100)}%</span>
+                    </div>
+                    <div className="h-2 bg-muted rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-pink-500 rounded-full"
+                        style={{ width: `${(genderStats.female / genderStats.total) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </motion.div>
 
       {/* Main Content Grid */}

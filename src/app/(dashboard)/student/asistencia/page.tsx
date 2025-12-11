@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Calendar,
@@ -8,16 +9,30 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Filter
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-const attendanceData = {
-  present: 45,
-  absent: 2,
-  late: 3,
-  total: 50,
+const courses = [
+  { id: 'all', name: 'Todos los cursos' },
+  { id: 'mat', name: 'Matemáticas' },
+  { id: 'esp', name: 'Español' },
+  { id: 'cie', name: 'Ciencias' },
+  { id: 'his', name: 'Historia' },
+  { id: 'ing', name: 'Inglés' },
+  { id: 'edf', name: 'Educación Física' },
+]
+
+const attendanceDataByCourse: Record<string, { present: number; absent: number; late: number; total: number }> = {
+  all: { present: 45, absent: 2, late: 3, total: 50 },
+  mat: { present: 18, absent: 1, late: 1, total: 20 },
+  esp: { present: 17, absent: 0, late: 1, total: 18 },
+  cie: { present: 8, absent: 1, late: 0, total: 9 },
+  his: { present: 2, absent: 0, late: 1, total: 3 },
+  ing: { present: 0, absent: 0, late: 0, total: 0 },
+  edf: { present: 0, absent: 0, late: 0, total: 0 },
 }
 
 const monthlyAttendance = [
@@ -55,16 +70,21 @@ const monthlyAttendance = [
 ]
 
 const recentHistory = [
-  { date: '2024-12-10', status: 'present', time: '7:45 AM' },
-  { date: '2024-12-09', status: 'late', time: '8:15 AM' },
-  { date: '2024-12-06', status: 'present', time: '7:50 AM' },
-  { date: '2024-12-05', status: 'present', time: '7:48 AM' },
-  { date: '2024-12-04', status: 'absent', time: '-' },
-  { date: '2024-12-03', status: 'present', time: '7:52 AM' },
+  { date: '2024-12-10', status: 'present', time: '7:45 AM', course: 'Matemáticas' },
+  { date: '2024-12-09', status: 'late', time: '8:15 AM', course: 'Español' },
+  { date: '2024-12-06', status: 'present', time: '7:50 AM', course: 'Ciencias' },
+  { date: '2024-12-05', status: 'present', time: '7:48 AM', course: 'Historia' },
+  { date: '2024-12-04', status: 'absent', time: '-', course: 'Matemáticas' },
+  { date: '2024-12-03', status: 'present', time: '7:52 AM', course: 'Inglés' },
 ]
 
 export default function StudentAsistenciaPage() {
-  const attendanceRate = Math.round((attendanceData.present / attendanceData.total) * 100)
+  const [selectedCourse, setSelectedCourse] = useState('all')
+
+  const attendanceData = attendanceDataByCourse[selectedCourse] || attendanceDataByCourse.all
+  const attendanceRate = attendanceData.total > 0
+    ? Math.round((attendanceData.present / attendanceData.total) * 100)
+    : 0
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -96,6 +116,10 @@ export default function StudentAsistenciaPage() {
     }
   }
 
+  const filteredHistory = selectedCourse === 'all'
+    ? recentHistory
+    : recentHistory.filter(r => r.course.toLowerCase().includes(courses.find(c => c.id === selectedCourse)?.name.toLowerCase() || ''))
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -117,6 +141,30 @@ export default function StudentAsistenciaPage() {
           </Button>
         </div>
       </div>
+
+      {/* Course Filter */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium">Filtrar por curso:</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {courses.map((course) => (
+                <Button
+                  key={course.id}
+                  variant={selectedCourse === course.id ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setSelectedCourse(course.id)}
+                >
+                  {course.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
@@ -231,9 +279,9 @@ export default function StudentAsistenciaPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentHistory.map((record, index) => (
+                {filteredHistory.map((record, index) => (
                   <motion.div
-                    key={record.date}
+                    key={`${record.date}-${record.course}`}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.5 + index * 0.05 }}
@@ -244,7 +292,7 @@ export default function StudentAsistenciaPage() {
                       <p className="font-medium text-sm">{record.date}</p>
                       <p className="text-xs text-muted-foreground">
                         {record.status === 'present' ? 'Presente' :
-                         record.status === 'absent' ? 'Ausente' : 'Tardanza'}
+                         record.status === 'absent' ? 'Ausente' : 'Tardanza'} - {record.course}
                       </p>
                     </div>
                     <span className="text-sm text-muted-foreground">{record.time}</span>

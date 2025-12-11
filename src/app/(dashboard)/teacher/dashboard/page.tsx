@@ -7,9 +7,6 @@ import {
   ClipboardCheck,
   Calendar,
   Clock,
-  FileText,
-  MessageSquare,
-  Bell,
   ChevronRight,
   Star
 } from 'lucide-react'
@@ -94,16 +91,6 @@ export default function TeacherDashboardPage() {
           <p className="text-muted-foreground mt-1">
             Tienes 4 clases programadas para hoy.
           </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline">
-            <MessageSquare className="h-4 w-4 mr-2" />
-            Mensajes
-          </Button>
-          <Button>
-            <FileText className="h-4 w-4 mr-2" />
-            Crear Material
-          </Button>
         </div>
       </div>
 

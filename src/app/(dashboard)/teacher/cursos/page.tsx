@@ -7,9 +7,7 @@ import {
   Clock,
   Calendar,
   FileText,
-  BarChart3,
-  ChevronRight,
-  Plus
+  BarChart3
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -65,15 +63,9 @@ export default function TeacherCursosPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-3xl font-bold">Mis Cursos</h1>
-          <p className="text-muted-foreground mt-1">Gestiona tus cursos asignados</p>
-        </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Crear Material
-        </Button>
+      <div>
+        <h1 className="font-heading text-3xl font-bold">Mis Cursos</h1>
+        <p className="text-muted-foreground mt-1">Gestiona tus cursos asignados</p>
       </div>
 
       {/* Stats Summary */}

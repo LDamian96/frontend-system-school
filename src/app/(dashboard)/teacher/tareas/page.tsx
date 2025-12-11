@@ -17,7 +17,8 @@ import {
   Download,
   X,
   Save,
-  Star
+  Star,
+  XCircle
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,7 +46,7 @@ interface StudentSubmission {
   file: string | null
   grade: number | null
   maxGrade: number
-  status: 'pending' | 'submitted' | 'graded'
+  status: 'pending' | 'submitted' | 'graded' | 'not_submitted'
 }
 
 const tasks: Task[] = [
@@ -105,6 +106,14 @@ export default function TeacherTareasPage() {
     setSubmissions(prev => prev.map(s =>
       s.id === studentId
         ? { ...s, grade, status: grade !== null ? 'graded' as const : s.status }
+        : s
+    ))
+  }
+
+  const handleMarkNotSubmitted = (studentId: number) => {
+    setSubmissions(prev => prev.map(s =>
+      s.id === studentId
+        ? { ...s, status: 'not_submitted' as const, grade: null }
         : s
     ))
   }
@@ -188,7 +197,6 @@ export default function TeacherTareasPage() {
             <div className="flex flex-wrap gap-2">
               {[
                 { value: 'all', label: 'Todas' },
-                { value: 'active', label: 'Activas' },
                 { value: 'grading', label: 'Por Calificar' },
                 { value: 'completed', label: 'Completadas' },
               ].map((filter) => (
@@ -438,6 +446,8 @@ export default function TeacherTareasPage() {
                                 <span className="text-orange-500">Sin entregar</span>
                               ) : student.status === 'submitted' ? (
                                 <span className="text-blue-500">Entregado: {student.submittedAt}</span>
+                              ) : student.status === 'not_submitted' ? (
+                                <span className="text-red-500">No Entregó</span>
                               ) : (
                                 <span className="text-green-500">Calificado</span>
                               )}
@@ -454,8 +464,20 @@ export default function TeacherTareasPage() {
                             </Button>
                           )}
 
+                          {/* No Entregó button for pending students */}
+                          {student.status === 'pending' && (
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleMarkNotSubmitted(student.id)}
+                            >
+                              <XCircle className="h-4 w-4 mr-1" />
+                              No Entregó
+                            </Button>
+                          )}
+
                           {/* Grade input */}
-                          {student.status !== 'pending' && (
+                          {(student.status === 'submitted' || student.status === 'graded') && (
                             <div className="flex items-center gap-2">
                               <label className="text-sm text-muted-foreground whitespace-nowrap">Nota:</label>
                               <Input
@@ -468,6 +490,13 @@ export default function TeacherTareasPage() {
                                 placeholder="--"
                               />
                               <span className="text-sm text-muted-foreground">/ {student.maxGrade}</span>
+                            </div>
+                          )}
+
+                          {/* Not submitted display */}
+                          {student.status === 'not_submitted' && (
+                            <div className="px-3 py-1 rounded-lg font-bold text-red-500 bg-red-500/10">
+                              Sin nota
                             </div>
                           )}
 

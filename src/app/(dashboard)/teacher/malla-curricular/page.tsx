@@ -11,10 +11,15 @@ import {
   CheckCircle2,
   Target,
   Calendar,
-  TrendingUp
+  TrendingUp,
+  Plus,
+  X,
+  Save,
+  Trash2
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
 interface Topic {
   id: number
@@ -121,9 +126,85 @@ const myCurriculums: Curriculum[] = [
   },
 ]
 
+interface NewTopic {
+  name: string
+  description: string
+  hours: string
+}
+
+interface NewUnit {
+  name: string
+  description: string
+  topics: NewTopic[]
+}
+
+interface NewCurriculum {
+  course: string
+  totalHours: string
+  units: NewUnit[]
+}
+
+const initialNewCurriculum: NewCurriculum = {
+  course: '',
+  totalHours: '',
+  units: []
+}
+
 export default function TeacherMallaCurricularPage() {
   const [expandedCurriculum, setExpandedCurriculum] = useState<number | null>(1)
   const [expandedUnits, setExpandedUnits] = useState<number[]>([1, 2])
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [newCurriculum, setNewCurriculum] = useState<NewCurriculum>(initialNewCurriculum)
+  const [currentStep, setCurrentStep] = useState(1)
+
+  const addUnit = () => {
+    setNewCurriculum({
+      ...newCurriculum,
+      units: [...newCurriculum.units, { name: '', description: '', topics: [] }]
+    })
+  }
+
+  const removeUnit = (index: number) => {
+    setNewCurriculum({
+      ...newCurriculum,
+      units: newCurriculum.units.filter((_, i) => i !== index)
+    })
+  }
+
+  const updateUnit = (index: number, field: keyof NewUnit, value: string) => {
+    const updatedUnits = [...newCurriculum.units]
+    if (field !== 'topics') {
+      updatedUnits[index] = { ...updatedUnits[index], [field]: value }
+      setNewCurriculum({ ...newCurriculum, units: updatedUnits })
+    }
+  }
+
+  const addTopic = (unitIndex: number) => {
+    const updatedUnits = [...newCurriculum.units]
+    updatedUnits[unitIndex].topics.push({ name: '', description: '', hours: '' })
+    setNewCurriculum({ ...newCurriculum, units: updatedUnits })
+  }
+
+  const removeTopic = (unitIndex: number, topicIndex: number) => {
+    const updatedUnits = [...newCurriculum.units]
+    updatedUnits[unitIndex].topics = updatedUnits[unitIndex].topics.filter((_, i) => i !== topicIndex)
+    setNewCurriculum({ ...newCurriculum, units: updatedUnits })
+  }
+
+  const updateTopic = (unitIndex: number, topicIndex: number, field: keyof NewTopic, value: string) => {
+    const updatedUnits = [...newCurriculum.units]
+    updatedUnits[unitIndex].topics[topicIndex] = {
+      ...updatedUnits[unitIndex].topics[topicIndex],
+      [field]: value
+    }
+    setNewCurriculum({ ...newCurriculum, units: updatedUnits })
+  }
+
+  const resetModal = () => {
+    setNewCurriculum(initialNewCurriculum)
+    setCurrentStep(1)
+    setShowCreateModal(false)
+  }
 
   const toggleUnit = (unitId: number) => {
     setExpandedUnits(prev =>
@@ -139,9 +220,15 @@ export default function TeacherMallaCurricularPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="font-heading text-3xl font-bold">Malla Curricular</h1>
-        <p className="text-muted-foreground mt-1">Visualiza y gestiona el progreso de tus materias</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-3xl font-bold">Malla Curricular</h1>
+          <p className="text-muted-foreground mt-1">Visualiza y gestiona el progreso de tus materias</p>
+        </div>
+        <Button onClick={() => setShowCreateModal(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          Nueva Malla
+        </Button>
       </div>
 
       {/* Stats */}
@@ -349,6 +436,218 @@ export default function TeacherMallaCurricularPage() {
           )
         })}
       </div>
+
+      {/* Create Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto"
+            onClick={resetModal}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-background rounded-xl shadow-xl w-full max-w-2xl my-8"
+            >
+              <div className="p-6 border-b flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Nueva Malla Curricular</h2>
+                  <div className="flex items-center gap-2 mt-2">
+                    {[1, 2, 3].map((step) => (
+                      <div key={step} className="flex items-center gap-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                          currentStep >= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {step}
+                        </div>
+                        {step < 3 && <div className={`w-8 h-0.5 ${currentStep > step ? 'bg-primary' : 'bg-muted'}`} />}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button variant="ghost" size="icon" onClick={resetModal}>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                {/* Step 1: Basic Info */}
+                {currentStep === 1 && (
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-lg">Seleccionar Curso</h3>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Curso</label>
+                      <select
+                        className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                        value={newCurriculum.course}
+                        onChange={(e) => setNewCurriculum({ ...newCurriculum, course: e.target.value })}
+                      >
+                        <option value="">Seleccionar curso...</option>
+                        <option value="5to A - Matemáticas">5to A - Matemáticas</option>
+                        <option value="5to B - Matemáticas">5to B - Matemáticas</option>
+                        <option value="6to A - Álgebra">6to A - Álgebra</option>
+                        <option value="6to B - Geometría">6to B - Geometría</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Horas Totales</label>
+                      <Input
+                        type="number"
+                        placeholder="180"
+                        value={newCurriculum.totalHours}
+                        onChange={(e) => setNewCurriculum({ ...newCurriculum, totalHours: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 2: Units */}
+                {currentStep === 2 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-medium text-lg">Unidades</h3>
+                      <Button variant="outline" size="sm" onClick={addUnit}>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Agregar Unidad
+                      </Button>
+                    </div>
+                    {newCurriculum.units.length === 0 ? (
+                      <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-xl">
+                        <Layers className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                        <p>No hay unidades agregadas</p>
+                        <Button variant="outline" size="sm" className="mt-2" onClick={addUnit}>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Agregar primera unidad
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {newCurriculum.units.map((unit, index) => (
+                          <div key={index} className="p-4 border rounded-xl space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm font-medium text-muted-foreground">Unidad {index + 1}</span>
+                              <Button variant="ghost" size="icon" onClick={() => removeUnit(index)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                            <Input
+                              placeholder="Nombre de la unidad (ej: Números y Operaciones)"
+                              value={unit.name}
+                              onChange={(e) => updateUnit(index, 'name', e.target.value)}
+                            />
+                            <Input
+                              placeholder="Descripción breve"
+                              value={unit.description}
+                              onChange={(e) => updateUnit(index, 'description', e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Step 3: Topics */}
+                {currentStep === 3 && (
+                  <div className="space-y-4">
+                    <h3 className="font-medium text-lg">Temas por Unidad</h3>
+                    {newCurriculum.units.map((unit, unitIndex) => (
+                      <div key={unitIndex} className="border rounded-xl overflow-hidden">
+                        <div className="p-3 bg-muted/50 font-medium flex items-center justify-between">
+                          <span>{unit.name || `Unidad ${unitIndex + 1}`}</span>
+                          <Button variant="ghost" size="sm" onClick={() => addTopic(unitIndex)}>
+                            <Plus className="h-4 w-4 mr-1" />
+                            Tema
+                          </Button>
+                        </div>
+                        <div className="p-3 space-y-2">
+                          {unit.topics.length === 0 ? (
+                            <p className="text-sm text-muted-foreground text-center py-2">
+                              Sin temas. Haz clic en &quot;Tema&quot; para agregar.
+                            </p>
+                          ) : (
+                            unit.topics.map((topic, topicIndex) => (
+                              <div key={topicIndex} className="flex gap-2 items-start p-2 bg-muted/20 rounded-lg">
+                                <div className="flex-1 space-y-2">
+                                  <Input
+                                    placeholder="Nombre del tema"
+                                    value={topic.name}
+                                    onChange={(e) => updateTopic(unitIndex, topicIndex, 'name', e.target.value)}
+                                    className="h-8 text-sm"
+                                  />
+                                  <div className="flex gap-2">
+                                    <Input
+                                      placeholder="Descripción"
+                                      value={topic.description}
+                                      onChange={(e) => updateTopic(unitIndex, topicIndex, 'description', e.target.value)}
+                                      className="h-8 text-sm flex-1"
+                                    />
+                                    <Input
+                                      type="number"
+                                      placeholder="Horas"
+                                      value={topic.hours}
+                                      onChange={(e) => updateTopic(unitIndex, topicIndex, 'hours', e.target.value)}
+                                      className="h-8 text-sm w-20"
+                                    />
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="shrink-0"
+                                  onClick={() => removeTopic(unitIndex, topicIndex)}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="p-6 border-t flex gap-3 justify-between">
+                <Button
+                  variant="outline"
+                  onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : resetModal()}
+                >
+                  {currentStep > 1 ? 'Anterior' : 'Cancelar'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (currentStep < 3) {
+                      setCurrentStep(currentStep + 1)
+                    } else {
+                      resetModal()
+                    }
+                  }}
+                  disabled={
+                    (currentStep === 1 && !newCurriculum.course) ||
+                    (currentStep === 2 && newCurriculum.units.length === 0)
+                  }
+                >
+                  {currentStep < 3 ? (
+                    <>Siguiente</>
+                  ) : (
+                    <>
+                      <Save className="h-4 w-4 mr-2" />
+                      Crear Malla
+                    </>
+                  )}
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

@@ -75,7 +75,6 @@ export default function TeacherExamenesPage() {
   const [students, setStudents] = useState(studentsForGrading)
   const [newExam, setNewExam] = useState({
     title: '',
-    subject: 'Matemáticas',
     course: '',
     date: '',
     duration: '60',
@@ -322,37 +321,19 @@ export default function TeacherExamenesPage() {
                     onChange={(e) => setNewExam({ ...newExam, title: e.target.value })}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Materia</label>
-                    <select
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                      value={newExam.subject}
-                      onChange={(e) => setNewExam({ ...newExam, subject: e.target.value })}
-                    >
-                      <option value="Matemáticas">Matemáticas</option>
-                      <option value="Español">Español</option>
-                      <option value="Ciencias">Ciencias</option>
-                      <option value="Historia">Historia</option>
-                      <option value="Inglés">Inglés</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Curso</label>
-                    <select
-                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
-                      value={newExam.course}
-                      onChange={(e) => setNewExam({ ...newExam, course: e.target.value })}
-                    >
-                      <option value="">Seleccionar...</option>
-                      <option value="3ro A">3ro A</option>
-                      <option value="3ro B">3ro B</option>
-                      <option value="4to A">4to A</option>
-                      <option value="4to B">4to B</option>
-                      <option value="5to A">5to A</option>
-                      <option value="5to B">5to B</option>
-                    </select>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Curso</label>
+                  <select
+                    className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
+                    value={newExam.course}
+                    onChange={(e) => setNewExam({ ...newExam, course: e.target.value })}
+                  >
+                    <option value="">Seleccionar...</option>
+                    <option value="5to A - Matemáticas">5to A - Matemáticas</option>
+                    <option value="5to B - Matemáticas">5to B - Matemáticas</option>
+                    <option value="6to A - Álgebra">6to A - Álgebra</option>
+                    <option value="6to B - Geometría">6to B - Geometría</option>
+                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>

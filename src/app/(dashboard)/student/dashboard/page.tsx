@@ -1,31 +1,40 @@
 'use client'
 
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   BookOpen,
   ClipboardCheck,
   Calendar,
-  Trophy,
   Clock,
-  TrendingUp,
   FileText,
-  Bell,
   ChevronRight,
   CheckCircle2,
   Circle
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
+
+const courses = [
+  { id: 'all', name: 'Todos' },
+  { id: 'mat', name: 'Matemáticas' },
+  { id: 'esp', name: 'Español' },
+  { id: 'cie', name: 'Ciencias' },
+  { id: 'his', name: 'Historia' },
+  { id: 'ing', name: 'Inglés' },
+]
+
+const attendanceByCourse: Record<string, number> = {
+  all: 98,
+  mat: 100,
+  esp: 95,
+  cie: 100,
+  his: 90,
+  ing: 98,
+}
 
 const stats = [
-  {
-    title: 'Promedio General',
-    value: '92%',
-    subtitle: 'Excelente',
-    icon: TrendingUp,
-    color: 'text-green-500',
-    bgColor: 'bg-green-500/10',
-  },
   {
     title: 'Tareas Pendientes',
     value: '5',
@@ -35,20 +44,12 @@ const stats = [
     bgColor: 'bg-orange-500/10',
   },
   {
-    title: 'Asistencia',
-    value: '98%',
-    subtitle: 'Este mes',
-    icon: Calendar,
+    title: 'Materias Inscritas',
+    value: '6',
+    subtitle: 'Este período',
+    icon: BookOpen,
     color: 'text-blue-500',
     bgColor: 'bg-blue-500/10',
-  },
-  {
-    title: 'Logros',
-    value: '12',
-    subtitle: 'Insignias',
-    icon: Trophy,
-    color: 'text-yellow-500',
-    bgColor: 'bg-yellow-500/10',
   },
 ]
 
@@ -66,14 +67,6 @@ const pendingAssignments = [
   { id: 3, title: 'Reporte de Laboratorio', subject: 'Ciencias', deadline: 'Vie 13 Dic', progress: 0 },
 ]
 
-const grades = [
-  { subject: 'Matemáticas', grade: 95, trend: 'up' },
-  { subject: 'Español', grade: 88, trend: 'up' },
-  { subject: 'Ciencias', grade: 92, trend: 'stable' },
-  { subject: 'Historia', grade: 90, trend: 'down' },
-  { subject: 'Inglés', grade: 94, trend: 'up' },
-]
-
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -88,6 +81,9 @@ const itemVariants = {
 }
 
 export default function StudentDashboardPage() {
+  const [attendanceCourse, setAttendanceCourse] = useState('all')
+  const attendanceValue = attendanceByCourse[attendanceCourse] || 98
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -99,14 +95,12 @@ export default function StudentDashboardPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
-            <Bell className="h-4 w-4 mr-2" />
-            Avisos
-          </Button>
-          <Button>
-            <FileText className="h-4 w-4 mr-2" />
-            Mis Tareas
-          </Button>
+          <Link href="/student/tareas">
+            <Button>
+              <FileText className="h-4 w-4 mr-2" />
+              Mis Tareas
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -115,7 +109,7 @@ export default function StudentDashboardPage() {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
       >
         {stats.map((stat) => (
           <motion.div key={stat.title} variants={itemVariants}>
@@ -135,6 +129,38 @@ export default function StudentDashboardPage() {
             </Card>
           </motion.div>
         ))}
+
+        {/* Attendance Card with Filter */}
+        <motion.div variants={itemVariants}>
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="pt-6">
+              <div className="flex items-start justify-between">
+                <div className="p-3 rounded-xl bg-green-500/10">
+                  <Calendar className="h-6 w-6 text-green-500" />
+                </div>
+              </div>
+              <div className="mt-4">
+                <p className="text-3xl font-bold">{attendanceValue}%</p>
+                <p className="text-sm font-medium mt-1">Asistencia</p>
+                <div className="mt-2 flex flex-wrap gap-1">
+                  {courses.map((course) => (
+                    <button
+                      key={course.id}
+                      onClick={() => setAttendanceCourse(course.id)}
+                      className={`px-2 py-0.5 text-xs rounded-full transition-colors ${
+                        attendanceCourse === course.id
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      {course.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
       {/* Main Content Grid */}
@@ -153,9 +179,11 @@ export default function StudentDashboardPage() {
                   <CardTitle>Mi Horario de Hoy</CardTitle>
                   <CardDescription>Martes, 10 de Diciembre</CardDescription>
                 </div>
-                <Button variant="ghost" size="sm">
-                  Ver completo
-                </Button>
+                <Link href="/student/horario">
+                  <Button variant="ghost" size="sm">
+                    Ver completo
+                  </Button>
+                </Link>
               </div>
             </CardHeader>
             <CardContent>
@@ -261,80 +289,17 @@ export default function StudentDashboardPage() {
                   </motion.div>
                 ))}
               </div>
+              <div className="mt-4">
+                <Link href="/student/tareas">
+                  <Button variant="outline" className="w-full">
+                    Ver todas las tareas
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
-
-      {/* Grades Overview */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-      >
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Mis Calificaciones</CardTitle>
-                <CardDescription>Promedio por materia este período</CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                Ver detalle
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
-              {grades.map((item, index) => (
-                <motion.div
-                  key={item.subject}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  className="flex flex-col items-center p-4 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
-                >
-                  <div className="relative w-16 h-16 mb-3">
-                    <svg className="w-full h-full -rotate-90">
-                      <circle
-                        cx="32"
-                        cy="32"
-                        r="28"
-                        className="fill-none stroke-muted stroke-[4]"
-                      />
-                      <motion.circle
-                        cx="32"
-                        cy="32"
-                        r="28"
-                        className={`fill-none stroke-[4] ${
-                          item.grade >= 90 ? 'stroke-green-500' :
-                          item.grade >= 80 ? 'stroke-blue-500' :
-                          item.grade >= 70 ? 'stroke-yellow-500' : 'stroke-red-500'
-                        }`}
-                        strokeLinecap="round"
-                        initial={{ strokeDasharray: '0, 176' }}
-                        animate={{ strokeDasharray: `${(item.grade / 100) * 176}, 176` }}
-                        transition={{ delay: 0.9 + index * 0.1, duration: 0.8 }}
-                      />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-lg font-bold">
-                      {item.grade}
-                    </span>
-                  </div>
-                  <span className="text-sm font-medium text-center">{item.subject}</span>
-                  <span className={`text-xs mt-1 ${
-                    item.trend === 'up' ? 'text-green-500' :
-                    item.trend === 'down' ? 'text-red-500' : 'text-muted-foreground'
-                  }`}>
-                    {item.trend === 'up' ? '↑ Subiendo' :
-                     item.trend === 'down' ? '↓ Bajando' : '→ Estable'}
-                  </span>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
     </div>
   )
 }

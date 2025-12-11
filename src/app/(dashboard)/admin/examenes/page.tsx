@@ -50,8 +50,15 @@ const exams: Exam[] = [
 
 export default function AdminExamenesPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [filterSubject, setFilterSubject] = useState('')
+  const [filterCourse, setFilterCourse] = useState('')
+  const [filterStatus, setFilterStatus] = useState('')
   const [showDetailModal, setShowDetailModal] = useState(false)
   const [selectedExam, setSelectedExam] = useState<Exam | null>(null)
+
+  // Obtener materias y cursos únicos para los filtros
+  const subjects = [...new Set(exams.map(e => e.subject))]
+  const courses = [...new Set(exams.map(e => e.course))]
 
   const getStatusBadge = (status: Exam['status']) => {
     const styles = {
@@ -73,12 +80,19 @@ export default function AdminExamenesPage() {
     )
   }
 
-  const filteredExams = exams.filter(exam =>
-    exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    exam.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    exam.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    exam.teacher.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredExams = exams.filter(exam => {
+    const matchesSearch = searchTerm === '' ||
+      exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exam.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exam.course.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      exam.teacher.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesSubject = filterSubject === '' || exam.subject === filterSubject
+    const matchesCourse = filterCourse === '' || exam.course === filterCourse
+    const matchesStatus = filterStatus === '' || exam.status === filterStatus
+
+    return matchesSearch && matchesSubject && matchesCourse && matchesStatus
+  })
 
   const stats = {
     total: exams.length,
@@ -153,18 +167,35 @@ export default function AdminExamenesPage() {
                 className="pl-10"
               />
             </div>
-            <div className="flex gap-2">
-              <select className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+            <div className="flex flex-wrap gap-2">
+              <select
+                className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+                value={filterSubject}
+                onChange={(e) => setFilterSubject(e.target.value)}
+              >
                 <option value="">Todas las materias</option>
-                <option value="Matemáticas">Matemáticas</option>
-                <option value="Español">Español</option>
-                <option value="Ciencias">Ciencias</option>
-                <option value="Historia">Historia</option>
-                <option value="Inglés">Inglés</option>
+                {subjects.map(subject => (
+                  <option key={subject} value={subject}>{subject}</option>
+                ))}
               </select>
-              <select className="h-10 px-3 rounded-md border border-input bg-background text-sm">
+              <select
+                className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+                value={filterCourse}
+                onChange={(e) => setFilterCourse(e.target.value)}
+              >
+                <option value="">Todos los grados</option>
+                {courses.map(course => (
+                  <option key={course} value={course}>{course}</option>
+                ))}
+              </select>
+              <select
+                className="h-10 px-3 rounded-md border border-input bg-background text-sm"
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+              >
                 <option value="">Todos los estados</option>
                 <option value="scheduled">Programado</option>
+                <option value="in_progress">En Curso</option>
                 <option value="grading">Por calificar</option>
                 <option value="completed">Completado</option>
               </select>

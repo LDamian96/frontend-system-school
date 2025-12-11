@@ -36,6 +36,7 @@ const menuItems = {
   admin: [
     { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/admin/usuarios', icon: Users, label: 'Usuarios' },
+    { href: '/admin/grados-secciones', icon: GraduationCap, label: 'Grados y Secciones' },
     { href: '/admin/cursos', icon: BookOpen, label: 'Cursos' },
     { href: '/admin/materias', icon: Library, label: 'Materias' },
     { href: '/admin/malla-curricular', icon: Layers, label: 'Malla Curricular' },
@@ -58,6 +59,7 @@ const menuItems = {
     { href: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/student/horario', icon: Calendar, label: 'Mi Horario' },
     { href: '/student/materias', icon: Library, label: 'Mis Materias' },
+    { href: '/student/malla-curricular', icon: Layers, label: 'Malla Curricular' },
     { href: '/student/tareas', icon: FileText, label: 'Mis Tareas' },
     { href: '/student/examenes', icon: PenTool, label: 'Mis Exámenes' },
     { href: '/student/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
@@ -188,16 +190,18 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-4 border-t space-y-1">
-        <Link
-          href="/settings"
-          className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all',
-            collapsed && 'justify-center'
-          )}
-        >
-          <Settings className="h-5 w-5" />
-          {!collapsed && <span className="text-sm">Configuración</span>}
-        </Link>
+        {role === 'admin' && (
+          <Link
+            href="/admin/configuracion"
+            className={cn(
+              'flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-all',
+              collapsed && 'justify-center'
+            )}
+          >
+            <Settings className="h-5 w-5" />
+            {!collapsed && <span className="text-sm">Configuración</span>}
+          </Link>
+        )}
         <button
           className={cn(
             'flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full',
