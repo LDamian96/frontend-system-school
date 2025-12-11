@@ -7,21 +7,30 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GraduationCap, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { GraduationCap, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
+import { ApiError } from '@/lib/api'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const { login, isLoading } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // Simular carga
-    setTimeout(() => {
-      setIsLoading(false)
-      // Sin conexión backend, solo demo
-      alert('Demo: Login simulado. Conectar backend para funcionalidad real.')
-    }, 1500)
+    setError('')
+
+    try {
+      await login(email, password)
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message)
+      } else {
+        setError('Error al conectar con el servidor')
+      }
+    }
   }
 
   return (
@@ -56,13 +65,27 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex items-center gap-2 p-3 bg-destructive/10 text-destructive rounded-lg text-sm"
+                  >
+                    <AlertCircle className="h-4 w-4" />
+                    {error}
+                  </motion.div>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Correo electrónico</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="ejemplo@escuela.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
                 <div className="space-y-2">
@@ -72,7 +95,10 @@ export default function LoginPage() {
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       required
+                      disabled={isLoading}
                     />
                     <button
                       type="button"
@@ -128,7 +154,7 @@ export default function LoginPage() {
                   <p><strong>Admin:</strong> admin@school.com</p>
                   <p><strong>Profesor:</strong> teacher@school.com</p>
                   <p><strong>Estudiante:</strong> student@school.com</p>
-                  <p><strong>Contraseña:</strong> Demo123!</p>
+                  <p><strong>Contraseña:</strong> Admin123!</p>
                 </div>
               </div>
             </CardContent>

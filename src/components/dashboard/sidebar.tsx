@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth-context'
 import {
   GraduationCap,
   LayoutDashboard,
@@ -20,6 +21,7 @@ import {
   PenTool,
   Layers,
   Library,
+  Loader2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -30,10 +32,10 @@ interface SidebarProps {
   onToggle?: () => void
 }
 
-type Role = 'admin' | 'teacher' | 'student' | 'parent'
+type Role = 'ADMIN' | 'TEACHER' | 'STUDENT' | 'PARENT'
 
-const menuItems = {
-  admin: [
+const menuItems: Record<Role, Array<{ href: string; icon: typeof LayoutDashboard; label: string }>> = {
+  ADMIN: [
     { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/admin/usuarios', icon: Users, label: 'Usuarios' },
     { href: '/admin/grados-secciones', icon: GraduationCap, label: 'Grados y Secciones' },
@@ -45,7 +47,7 @@ const menuItems = {
     { href: '/admin/pagos', icon: CreditCard, label: 'Pagos' },
     { href: '/admin/reportes', icon: BarChart3, label: 'Reportes' },
   ],
-  teacher: [
+  TEACHER: [
     { href: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/teacher/cursos', icon: BookOpen, label: 'Mis Cursos' },
     { href: '/teacher/materias', icon: Library, label: 'Materias' },
@@ -53,43 +55,68 @@ const menuItems = {
     { href: '/teacher/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
     { href: '/teacher/tareas', icon: FileText, label: 'Tareas' },
     { href: '/teacher/examenes', icon: PenTool, label: 'Exámenes' },
+    { href: '/teacher/calificaciones', icon: BarChart3, label: 'Calificaciones' },
     { href: '/teacher/malla-curricular', icon: Layers, label: 'Malla Curricular' },
   ],
-  student: [
+  STUDENT: [
     { href: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/student/horario', icon: Calendar, label: 'Mi Horario' },
     { href: '/student/materias', icon: Library, label: 'Mis Materias' },
     { href: '/student/malla-curricular', icon: Layers, label: 'Malla Curricular' },
     { href: '/student/tareas', icon: FileText, label: 'Mis Tareas' },
     { href: '/student/examenes', icon: PenTool, label: 'Mis Exámenes' },
+    { href: '/student/calificaciones', icon: BarChart3, label: 'Mis Calificaciones' },
     { href: '/student/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
   ],
-  parent: [
+  PARENT: [
     { href: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/parent/hijos', icon: Users, label: 'Mis Hijos' },
+    { href: '/parent/calificaciones', icon: BarChart3, label: 'Calificaciones' },
     { href: '/parent/examenes', icon: PenTool, label: 'Exámenes' },
     { href: '/parent/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
   ],
 }
 
-const roleLabels = {
-  admin: 'Administrador',
-  teacher: 'Profesor',
-  student: 'Estudiante',
-  parent: 'Padre de Familia',
+const roleLabels: Record<Role, string> = {
+  ADMIN: 'Administrador',
+  TEACHER: 'Profesor',
+  STUDENT: 'Estudiante',
+  PARENT: 'Padre de Familia',
 }
 
 export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
   const pathname = usePathname()
+  const { user, logout, isLoading } = useAuth()
 
-  // Detect role from URL path
-  const role: Role = pathname.startsWith('/admin') ? 'admin'
-    : pathname.startsWith('/teacher') ? 'teacher'
-    : pathname.startsWith('/student') ? 'student'
-    : pathname.startsWith('/parent') ? 'parent'
-    : 'admin' // default
+  // Use role from auth context, fallback to URL detection
+  const role: Role = user?.role || (
+    pathname.startsWith('/admin') ? 'ADMIN'
+    : pathname.startsWith('/teacher') ? 'TEACHER'
+    : pathname.startsWith('/student') ? 'STUDENT'
+    : pathname.startsWith('/parent') ? 'PARENT'
+    : 'ADMIN'
+  )
 
   const items = menuItems[role] || []
+
+  // Get user initials for avatar
+  const getInitials = () => {
+    if (user?.profile) {
+      return `${user.profile.firstName?.[0] || ''}${user.profile.lastName?.[0] || ''}`.toUpperCase()
+    }
+    return user?.email?.[0]?.toUpperCase() || 'U'
+  }
+
+  const getUserName = () => {
+    if (user?.profile) {
+      return `${user.profile.firstName} ${user.profile.lastName}`
+    }
+    return user?.email || 'Usuario'
+  }
+
+  const handleLogout = async () => {
+    await logout()
+  }
 
   return (
     <motion.aside
@@ -132,7 +159,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
         <div className={cn('flex items-center gap-3', collapsed && 'justify-center')}>
           <Avatar>
             <AvatarImage src="/avatar.png" />
-            <AvatarFallback className="bg-primary text-white">US</AvatarFallback>
+            <AvatarFallback className="bg-primary text-white">{getInitials()}</AvatarFallback>
           </Avatar>
           {!collapsed && (
             <motion.div
@@ -140,7 +167,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
               animate={{ opacity: 1 }}
               className="flex-1 min-w-0"
             >
-              <p className="font-medium text-sm truncate">Usuario Demo</p>
+              <p className="font-medium text-sm truncate">{getUserName()}</p>
               <p className="text-xs text-muted-foreground truncate">
                 {roleLabels[role]}
               </p>
@@ -190,7 +217,7 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
 
       {/* Footer */}
       <div className="p-4 border-t space-y-1">
-        {role === 'admin' && (
+        {role === 'ADMIN' && (
           <Link
             href="/admin/configuracion"
             className={cn(
@@ -203,12 +230,18 @@ export function Sidebar({ collapsed = false, onToggle }: SidebarProps) {
           </Link>
         )}
         <button
+          onClick={handleLogout}
+          disabled={isLoading}
           className={cn(
-            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full',
+            'flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full disabled:opacity-50',
             collapsed && 'justify-center'
           )}
         >
-          <LogOut className="h-5 w-5" />
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <LogOut className="h-5 w-5" />
+          )}
           {!collapsed && <span className="text-sm">Cerrar Sesión</span>}
         </button>
       </div>
