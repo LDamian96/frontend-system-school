@@ -17,6 +17,9 @@ import {
   ChevronLeft,
   FileText,
   CreditCard,
+  PenTool,
+  Layers,
+  Library,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -34,29 +37,35 @@ const menuItems = {
     { href: '/admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/admin/usuarios', icon: Users, label: 'Usuarios' },
     { href: '/admin/cursos', icon: BookOpen, label: 'Cursos' },
+    { href: '/admin/materias', icon: Library, label: 'Materias' },
+    { href: '/admin/malla-curricular', icon: Layers, label: 'Malla Curricular' },
     { href: '/admin/matriculas', icon: FileText, label: 'Matrículas' },
+    { href: '/admin/examenes', icon: PenTool, label: 'Exámenes' },
     { href: '/admin/pagos', icon: CreditCard, label: 'Pagos' },
     { href: '/admin/reportes', icon: BarChart3, label: 'Reportes' },
   ],
   teacher: [
     { href: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/teacher/cursos', icon: BookOpen, label: 'Mis Cursos' },
+    { href: '/teacher/materias', icon: Library, label: 'Materias' },
     { href: '/teacher/horario', icon: Calendar, label: 'Mi Horario' },
     { href: '/teacher/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
     { href: '/teacher/tareas', icon: FileText, label: 'Tareas' },
-    { href: '/teacher/calificaciones', icon: BarChart3, label: 'Calificaciones' },
+    { href: '/teacher/examenes', icon: PenTool, label: 'Exámenes' },
+    { href: '/teacher/malla-curricular', icon: Layers, label: 'Malla Curricular' },
   ],
   student: [
     { href: '/student/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/student/horario', icon: Calendar, label: 'Mi Horario' },
+    { href: '/student/materias', icon: Library, label: 'Mis Materias' },
     { href: '/student/tareas', icon: FileText, label: 'Mis Tareas' },
-    { href: '/student/calificaciones', icon: BarChart3, label: 'Mis Notas' },
+    { href: '/student/examenes', icon: PenTool, label: 'Mis Exámenes' },
     { href: '/student/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
   ],
   parent: [
     { href: '/parent/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { href: '/parent/hijos', icon: Users, label: 'Mis Hijos' },
-    { href: '/parent/calificaciones', icon: BarChart3, label: 'Calificaciones' },
+    { href: '/parent/examenes', icon: PenTool, label: 'Exámenes' },
     { href: '/parent/asistencia', icon: ClipboardCheck, label: 'Asistencia' },
   ],
 }
